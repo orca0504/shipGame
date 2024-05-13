@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="kor">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>미~~~로</title>
+</head>
+<link rel="stylesheet" href="style.css">
+<body>
+    <div id="tone">
+        <div id="content">
+            <div>
+                <h4>배(플레이어) 상하좌우 조작은 키보드로 합니다.</h4> 
+                <h5>도착지점에 골인하면 CLEAR, 장애물과 충돌하면 GAME OVER</h5>
+            </div>
+            <div id="main">
+                <canvas id="canvas" width="600" height="600"> <!--캔버스 생성-->
+                </canvas>
+            </div>
+            
+            <div>
+                <a href="playFrame.html"><input type="button" value="다시하기"></a>
+                <h5 id="dev">Visual Studio Code_HTML&CSS&JS | 제작: 김어진</h5>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+<script>
+    let canvas = document.getElementById("canvas");
+    let ctx = canvas.getContext("2d");
+    
+    let img = new Image(); // 배 이미지
+    img.src = './image/ship.png';
+    let simg = new Image();
+    simg.src = './image/pf.png';
+    let aimg = new Image();
+    aimg.src = './image/af.png';
+    let cimg = new Image();
+    cimg.src = './image/cts.png';
+    let lcimg = new Image();
+    lcimg.src = './image/lcts.png';
+    let vcimg = new Image();
+    vcimg.src = './image/vcts.png';
+    let wimg = new Image();
+    wimg.src = './image/cld.png';
+    let oimg = new Image();
+    oimg.src = './image/orca.png';
+    
+    class Ice { // 장애물 오브제 
+        constructor(a, b) {
+        this.x = a;
+        this.y = b;
+        this.width = 100;
+        this.height = 100;
+        }
+        drawf() {
+        // ctx.fillStyle = "gold";
+        // ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.drawImage(cimg, this.x, this.y, this.width, this.height);
+        }
+    }   
+    class hIce { // 장애물 오브제 2
+        constructor(a, b) {
+        this.x = a;
+        this.y = b;
+        this.width = 200;
+        this.height = 100;
+        }
+        drawf() {
+        // ctx.fillStyle = "gold";
+        // ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.drawImage(lcimg, this.x, this.y, this.width, this.height);
+        }
+    } 
+    class vIce { // 장애물 오브제 3
+        constructor(a, b) {
+        this.x = a;
+        this.y = b;
+        this.width = 100;
+        this.height = 200;
+        }
+        drawf() {
+        // ctx.fillStyle = "gold";
+        // ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.drawImage(vcimg, this.x, this.y, this.width, this.height);
+        }
+    } 
+    class Cloud { // 기후 오브제 3
+        constructor(a, b) {
+        this.x = a;
+        this.y = b;
+        this.width = 300;
+        this.height = 100;
+        }
+        drawf() {
+        // ctx.fillStyle = "gold";
+        // ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.drawImage(wimg, this.x, this.y, this.width, this.height);
+        }
+    } 
+    class Orca { // 고래 오브제 
+        constructor(a, b) {
+        this.x = a;
+        this.y = b;
+        this.width = 100;
+        this.height = 100;
+        }
+        drawf() {
+        // ctx.fillStyle = "gold";
+        // ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.drawImage(oimg, this.x, this.y, this.width, this.height);
+        }
+    } 
+    let ice = new Ice(rnum(50, 550), rnum(50, 550));
+    let ice2 = new Ice(rnum(50, 550), rnum(50, 550));
+    let ice3 = new Ice(rnum(50, 550), rnum(50, 550));
+    let iceh = new hIce(rnum(50, 550), rnum(50, 550));
+    let iceh2 = new hIce(rnum(50, 550), rnum(50, 550));
+    let iceh3 = new hIce(rnum(50, 550), rnum(50, 550));
+    let icev = new vIce(rnum(50, 550), rnum(50, 550));
+    let orca = new Orca(rnum(50, 550), rnum(50, 550));
+    
+    function rnum(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    let x = canvas.width / 2;       
+    let y = canvas.height / 2;     
+    
+    // 움직일 도형의 크기
+    let rectWidth = 50;
+    let rectHeight = 25;
+    
+    // 움직일 도형의 시작점 정의
+    let rectX = 10; 
+    let rectY = 565; 
+    
+    //trye로 되면 해당방향으로 이동
+    let rightPressed = false;    //오른쪽 방향키가 눌려져 있는지 판단
+    let leftPressed = false;    //왼쪽 방향키가 눌려져 있는지 판단
+    let upPressed = false;      //위쪽 방향키가 눌려져 있는지 판단
+    let downPressed = false;    //아래 방향키가 눌려져 있는지 판단
+    
+    //이벤트 리스너 
+    document.addEventListener("keydown", keyDownHandler, false); 
+    document.addEventListener("keyup", keyUpHandler, false);
+    
+    function keyDownHandler(e) {     
+        if (e.key == 37 || e.key == "ArrowLeft") {    
+            leftPressed = true;
+        } else if (e.key == 39 || e.key == "ArrowRight") {
+            rightPressed = true;
+        } else if (e.key == 38 || e.key == "ArrowUp") {
+            upPressed = true;
+        } else if (e.key == 40 || e.key == "ArrowDown") {
+            downPressed = true;
+        }
+        console.log(rectX+","+rectY)
+    }
+    
+    function keyUpHandler(e) {       
+        if (e.key == 37 || e.key == "ArrowLeft") {    
+            leftPressed = false;
+        } else if (e.key == 39 || e.key == "ArrowRight") {
+            rightPressed = false;
+        } else if (e.key == 38 || e.key == "ArrowUp") {
+            upPressed = false;
+        } else if (e.key == 40 || e.key == "ArrowDown") {
+            downPressed = false;
+        }
+    }
+    
+    // 움직일 도형
+    function drawRect() {    
+        ctx.beginPath();  
+        
+        ctx.rect(rectX, rectY, rectWidth, rectHeight);
+        ctx.strokeStyle = "red";
+        ctx.drawImage(img, rectX, rectY, 50, 25)
+        ctx.stroke();  
+        
+        ctx.closePath();   //beginPath()로 시작한 경로를 닫는다
+    }
+    
+    function draw() { 
+        console.log('draw() 호출');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);  //사각형을 지우기 위해 clearRect() 메서드 호출
+        ctx.drawImage(aimg, 550, 0, 50, 50);
+        ctx.drawImage(simg, 0, 550, 50, 50);
+        ice.drawf();
+        ice2.drawf();
+        ice3.drawf();
+        iceh.drawf();
+        iceh2.drawf();
+        iceh3.drawf();
+        icev.drawf();
+        orca.drawf();
+        drawRect();  
+        
+        if (rightPressed && rectX < canvas.width - rectWidth) {
+            rectX += 5;
+        }else if (leftPressed && rectX > 0) {
+            rectX -= 5;
+        }else if (downPressed && rectY < canvas.height - rectHeight) {
+            rectY += 5;
+        }else if (upPressed && rectY > 0) {
+            rectY -= 5;
+        }
+        
+        if(rectX >= ice.x && rectX <= ice.x+60 && rectY >= ice.y && rectY <= ice.y+60){
+            alert('GAME OVER!');
+            clearInterval(gameInterval);
+            console.log('충돌 감지: 빙하');
+        }else if(rectX >= ice2.x && rectX <= ice2.x+60 && rectY >= ice2.y && rectY <= ice2.y+60){
+            alert('GAME OVER!');
+            clearInterval(gameInterval);
+            console.log('충돌 감지: 빙하');
+        }else if(rectX >= ice3.x && rectX <= ice3.x+60 && rectY >= ice3.y && rectY <= ice3.y+60){
+            alert('GAME OVER!');
+            clearInterval(gameInterval);
+            console.log('충돌 감지: 빙하');
+        }else if(rectX >= iceh.x && rectX <= iceh.x+180 && rectY >= iceh.y && rectY <= iceh.y+60){
+            alert('GAME OVER!');
+            clearInterval(gameInterval);
+            console.log('충돌 감지: 빙하 L');
+        }else if(rectX >= iceh2.x && rectX <= iceh2.x+180 && rectY >= iceh2.y && rectY <= iceh2.y+60){
+            alert('GAME OVER!');
+            clearInterval(gameInterval);
+            console.log('충돌 감지: 빙하 L');
+        }else if(rectX >= iceh3.x && rectX <= iceh3.x+180 && rectY >= iceh3.y && rectY <= iceh3.y+60){
+            alert('GAME OVER!');
+            clearInterval(gameInterval);
+            console.log('충돌 감지: 빙하 L');
+        }else if(rectX >= icev.x && rectX <= icev.x+60 && rectY >= icev.y && rectY <= icev.y+180){
+            alert('GAME OVER!');
+            clearInterval(gameInterval);
+            console.log('충돌 감지: 빙하 V');
+        }else if(rectX >= orca.x && rectX <= orca.x+60 && rectY >= orca.y && rectY <= orca.y+60){
+            alert('GAME OVER!');
+            clearInterval(gameInterval);
+            console.log('충돌 감지: 범고래');
+        }else if(rectX >= 500 && rectX <=600 && rectY >= 0 && rectY <= 50){
+            alert('GAME CLEAR!');
+            clearInterval(gameInterval);
+            clear++;
+            alert(clear)
+            console.log('충돌 감지: 도착지점');
+        }
+    }
+    
+    // 게임 루프
+    let gameInterval = setInterval(draw,10);
+    </script>
+

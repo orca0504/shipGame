@@ -1,0 +1,19 @@
+
+#canvas {
+    border: 1px solid rgb(0, 0, 0);
+    border-radius: 5px;
+    background-color: rgb(72, 202, 220);
+}
+#tone{
+    float: left;
+    width: 650px;
+
+    background-color: rgb(255, 220, 220);
+    border:1px dotted black;
+}
+#content{
+    margin-left: 10px;
+}
+#dev{
+    color:rgb(255, 114, 114)
+}
